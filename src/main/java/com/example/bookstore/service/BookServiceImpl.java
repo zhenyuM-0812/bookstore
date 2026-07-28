@@ -4,13 +4,15 @@ package com.example.bookstore.service;
 import com.example.bookstore.dto.BookRequestDto;
 import com.example.bookstore.dto.BookResponseDto;
 import com.example.bookstore.entity.Book;
+import com.example.bookstore.exception.DuplicateResourceException;
 import com.example.bookstore.exception.ResourceNotFoundException;
 import com.example.bookstore.repository.BookRepository;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -83,11 +85,11 @@ public class BookServiceImpl implements BookService{
     public BookResponseDto updateBook(Long id, BookRequestDto request){
         Book book = findBookOrThrow(id);
 
-        if(!book.getIsbn().equals(reuqest.getIsbn())){
+        if(!book.getIsbn().equals(request.getIsbn())){
             bookRepository.findByIsbn(request.getIsbn())
                     .ifPresent(existingBook ->{
                         throw new DuplicateResourceException(
-                                "A book with ISBN" + request.getIsbn() + "already exists"
+                                "A book with ISBN " + request.getIsbn() + " already exists"
                         );
 
                     });
@@ -113,10 +115,10 @@ public class BookServiceImpl implements BookService{
 
 
     private Book findBookOrThrow(Long id){
-        return bookRepository.findbyId(id)
+        return bookRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Book with id" + id + "not exists"
+                                "Book with id " + id + " not exists"
                         )
                 );
     }
