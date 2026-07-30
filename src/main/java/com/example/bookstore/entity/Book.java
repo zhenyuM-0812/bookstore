@@ -24,10 +24,9 @@ public class Book {
     @Column(nullable = false)
     private String title;
 
-    // Step 1 暂时用 String。
-    // Step 2 再改成 ManyToOne 的 Author Entity。
-    @Column(nullable = false)
-    private String author;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="author_id",nullable = false)
+    private Author author;
 
     @Column(nullable = false, unique = true)
     private String isbn;

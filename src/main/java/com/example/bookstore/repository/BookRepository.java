@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface BookRepository extends JpaRepository<Book,Long> {
 
     Optional<Book> findByIsbn(String isbn);
-    Page<Book> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(
+    Page<Book> findByTitleContainingIgnoreCaseOrAuthor_NameContainingIgnoreCase(
             String titleKeyword,
             String authorKeyword,
             Pageable pageable

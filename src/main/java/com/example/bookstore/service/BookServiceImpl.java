@@ -3,9 +3,11 @@ package com.example.bookstore.service;
 
 import com.example.bookstore.dto.BookRequestDto;
 import com.example.bookstore.dto.BookResponseDto;
+import com.example.bookstore.entity.Author;
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.exception.DuplicateResourceException;
 import com.example.bookstore.exception.ResourceNotFoundException;
+import com.example.bookstore.repository.AuthorRepository;
 import com.example.bookstore.repository.BookRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,13 +23,14 @@ import java.time.LocalDateTime;
 public class BookServiceImpl implements BookService{
 
     private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
 
 
     private BookResponseDto toResponseDto(Book book){
         return BookResponseDto.builder()
                 .id(book.getId())
                 .title(book.getTitle())
-                .author(book.getAuthor())
+                .author(book.getAuthor().getName())
                 .isbn(book.getIsbn())
                 .price(book.getPrice())
                 .stock(book.getStock())
@@ -45,9 +48,16 @@ public class BookServiceImpl implements BookService{
                             "A book with ISBN" + request.getIsbn() + "already exists"
                     );
                 });
+        Author author = authorRepository.findByName(request.getAuthor())
+                .orElseGet(()->{
+                    Author newAuthor = new Author();
+                    newAuthor.setName(request.getAuthor());
+                    return authorRepository.save(newAuthor);
+                });
+
         Book book = new Book();
         book.setTitle(request.getTitle());
-        book.setAuthor(request.getAuthor());
+        book.setAuthor(author);
         book.setIsbn(request.getIsbn());
         book.setPrice(request.getPrice());
         book.setStock(request.getStock());
@@ -74,7 +84,7 @@ public class BookServiceImpl implements BookService{
         if(keyword == null || keyword.isBlank()){
             books = bookRepository.findAll(pageable);
         }else{
-            books = bookRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(keyword,keyword,pageable);
+            books = bookRepository.findByTitleContainingIgnoreCaseOrAuthor_NameContainingIgnoreCase(keyword,keyword,pageable);
 
         }
         return books.map(this::toResponseDto);
@@ -95,8 +105,14 @@ public class BookServiceImpl implements BookService{
                     });
 
         }
+        Author author = authorRepository.findByName(request.getAuthor())
+                .orElseGet(()->{
+                    Author newAuthor = new Author();
+                    newAuthor.setName(request.getAuthor());
+                    return authorRepository.save(newAuthor);
+                });
         book.setTitle(request.getTitle());
-        book.setAuthor(request.getAuthor());
+        book.setAuthor(author);
         book.setIsbn(request.getIsbn());
         book.setPrice(request.getPrice());
         book.setStock(request.getStock());
