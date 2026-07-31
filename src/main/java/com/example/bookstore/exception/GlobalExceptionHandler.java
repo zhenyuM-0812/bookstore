@@ -3,6 +3,7 @@ package com.example.bookstore.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -46,7 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
             MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+            HttpServletRequest request){
 
         List<String> validationErrors =
                 ex.getBindingResult()
@@ -60,13 +61,38 @@ public class GlobalExceptionHandler {
 
         ErrorResponse error = buildError(
                 HttpStatus.BAD_REQUEST,
-                "Validation failed for one or more fields",
+                "Validation failed for one or more fields.",
                 request,
                 validationErrors
         );
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(
+            ObjectOptimisticLockingFailureException ex,
+            HttpServletRequest request){
+
+        ErrorResponse error = buildError(
+                HttpStatus.CONFLICT,
+                "This book was updated by another request. Please reload and try again.",
+                request,
+                null
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+
+    }
+
+
+
+
+
+
+
+
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
