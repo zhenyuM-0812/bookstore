@@ -27,7 +27,7 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Long userId) {
 
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
@@ -39,6 +39,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
+                .claim("userId", userId)
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(expiration)
