@@ -1,6 +1,10 @@
 package com.example.order.service;
 
+import com.example.order.client.dto.BookStockResponse;
+import com.example.order.client.BookClient;
+import com.example.order.client.dto.ReserveStockRequest;
 import com.example.order.dto.CreateOrderRequest;
+import com.example.order.dto.OrderItemRequest;
 import com.example.order.dto.OrderItemResponse;
 import com.example.order.dto.OrderResponse;
 import com.example.order.entity.Order;
@@ -14,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -21,6 +26,7 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final BookClient bookClient;
 
 
     private OrderItemResponse toItemResponse(
@@ -56,13 +62,56 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
+    @Transactional
     public OrderResponse createOrder(
             Long userId,
             CreateOrderRequest request) {
 
-        throw new UnsupportedOperationException(
-                "createOrder will be implemented after BookClient is added"
-        );
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setStatus(OrderStatus.PENDING);
+        order.setTotalPrice(BigDecimal.ZERO);
+
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (OrderItemRequest itemRequest : request.getItems()) {
+
+            ReserveStockRequest reserveRequest =
+                    new ReserveStockRequest(
+                            itemRequest.getQuantity()
+                    );
+
+            BookStockResponse bookStock =
+                    bookClient.reserveStock(
+                            itemRequest.getBookId(),
+                            reserveRequest
+                    );
+            OrderItem orderItem = new OrderItem();
+            orderItem.setBookId(bookStock.getBookId());
+            orderItem.setQuantity(itemRequest.getQuantity());
+            orderItem.setUnitPrice(bookStock.getPrice());
+
+            order.addItem(orderItem);
+
+            BigDecimal itemTotal =
+                    bookStock.getPrice()
+                            .multiply(
+                                    BigDecimal.valueOf(
+                                            itemRequest.getQuantity()
+                                    )
+                            );
+
+            totalPrice = totalPrice.add(itemTotal);
+
+        }
+
+        order.setTotalPrice(totalPrice);
+        Order saveOrder = orderRepository.save(order);
+
+        return toResponse(saveOrder);
+
+
+
     }
 
 

@@ -25,3 +25,8 @@ server:
 
 jwt:
   secret: ${JWT_SECRET:Ym9va3N0b3JlLWRldi1qd3Qtc2VjcmV0LWtleS0zMi1ieXRlcyE=}
+
+
+clients:
+  book-service:
+    url: http://localhost:8082
