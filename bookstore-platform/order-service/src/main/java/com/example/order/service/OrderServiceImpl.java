@@ -195,6 +195,40 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
+    @Override
+    @Transactional
+    public void markOrderAsPaid(Long orderId){
+        Order order = findOrderOrThrow(orderId);
+
+        if (order.getStatus() == OrderStatus.PAID) {
+            return;
+        }
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new InvalidOrderStatusException(
+                    "Order "
+                            + orderId
+                            + " cannot be marked as paid because its status is "
+                            + order.getStatus()
+            );
+        }
+
+        order.setStatus(OrderStatus.PAID);
+
+        orderRepository.save(order);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     private Order findOrderOrThrow(
             Long orderId) {
 

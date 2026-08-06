@@ -20,13 +20,29 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: order-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        "[spring.json.use.type.headers]": false
+        "[spring.json.value.default.type]": com.example.order.event.PaymentCompletedEvent
+        "[spring.json.trusted.packages]": com.example.order.event
+
 server:
   port: 8083
 
 jwt:
   secret: ${JWT_SECRET:Ym9va3N0b3JlLWRldi1qd3Qtc2VjcmV0LWtleS0zMi1ieXRlcyE=}
 
-
 clients:
   book-service:
     url: http://localhost:8082
+
+app:
+  kafka:
+    topics:
+      payment-completed: payment-completed

@@ -6,6 +6,8 @@ import com.example.payment.dto.PaymentRequest;
 import com.example.payment.dto.PaymentResponse;
 import com.example.payment.entity.Payment;
 import com.example.payment.entity.PaymentStatus;
+import com.example.payment.event.PaymentCompletedEvent;
+import com.example.payment.event.PaymentEventPublisher;
 import com.example.payment.exception.DuplicatePaymentException;
 import com.example.payment.exception.InvalidOrderStatusException;
 import com.example.payment.exception.ResourceNotFoundException;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +26,7 @@ public class PaymentServiceImpl
 
     private final PaymentRepository paymentRepository;
     private final OrderClient orderClient;
-
+    private final PaymentEventPublisher paymentEventPublisher;
 
     private PaymentResponse toResponse(
             Payment payment) {
@@ -75,6 +78,20 @@ public class PaymentServiceImpl
 
         Payment savedPayment =
                 paymentRepository.save(payment);
+
+
+        PaymentCompletedEvent event =
+                PaymentCompletedEvent.builder()
+                        .eventId(UUID.randomUUID().toString())
+                        .paymentId(savedPayment.getId())
+                        .orderId(savedPayment.getOrderId())
+                        .userId(order.getUserId())
+                        .amount(savedPayment.getAmount())
+                        .status(savedPayment.getStatus().name())
+                        .paidAt(savedPayment.getPaidAt())
+                        .build();
+
+        paymentEventPublisher.publish(event);
 
         return toResponse(savedPayment);
     }

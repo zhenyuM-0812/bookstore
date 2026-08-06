@@ -29,4 +29,6 @@ public interface OrderService {
             Long currentUserId,
             boolean isAdmin
     );
+
+    void markOrderAsPaid(Long orderId);
 }
