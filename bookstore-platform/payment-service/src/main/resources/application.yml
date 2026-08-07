@@ -2,51 +2,5 @@ spring:
   application:
     name: payment-service
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/payment_service_db
-    driver-class-name: org.postgresql.Driver
-    username: bookstore_user
-    password: bookstore_password
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-
-  cloud:
-    openfeign:
-      client:
-        config:
-          order-service:
-            connectTimeout: 2000
-            readTimeout: 3000
-
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        "[spring.json.add.type.headers]": false
-
-server:
-  port: 8084
-
-jwt:
-  secret: ${JWT_SECRET:Ym9va3N0b3JlLWRldi1qd3Qtc2VjcmV0LWtleS0zMi1ieXRlcyE=}
-
-clients:
-  order-service:
-    url: http://localhost:8083
-
-app:
-  kafka:
-    topics:
-      payment-completed: payment-completed
+  config:
+    import: configserver:http://localhost:8888
