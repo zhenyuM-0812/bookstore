@@ -1,6 +1,7 @@
 package com.example.order.event;
 
-import com.example.order.service.OrderService;
+
+import com.example.order.service.PaymentEventProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentEventListener {
 
-    private final OrderService orderService;
+
+    private final PaymentEventProcessingService paymentEventProcessingService;
 
     @KafkaListener(
             topics = "${app.kafka.topics.payment-completed}",
@@ -38,13 +40,7 @@ public class PaymentEventListener {
             return;
         }
 
-        orderService.markOrderAsPaid(
-                event.getOrderId()
-        );
 
-        log.info(
-                "Order {} was marked as PAID",
-                event.getOrderId()
-        );
+        paymentEventProcessingService.process(event);
     }
 }

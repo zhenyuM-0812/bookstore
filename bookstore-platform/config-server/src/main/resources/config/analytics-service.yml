@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_service_db
+    url: jdbc:postgresql://localhost:5432/analytics_service_db
     driver-class-name: org.postgresql.Driver
     username: bookstore_user
     password: bookstore_password
@@ -14,41 +14,21 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
   kafka:
     bootstrap-servers: localhost:9092
+
     consumer:
-      group-id: order-service-group
+      group-id: analytics
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         "[spring.json.use.type.headers]": false
-        "[spring.json.value.default.type]": com.example.order.event.PaymentCompletedEvent
-        "[spring.json.trusted.packages]": com.example.order.event
-
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        "[spring.json.add.type.headers]": false
-
-
-server:
-  port: 8083
-
-jwt:
-  secret: ${JWT_SECRET:Ym9va3N0b3JlLWRldi1qd3Qtc2VjcmV0LWtleS0zMi1ieXRlcyE=}
-
-clients:
-  book-service:
-    url: http://localhost:8082
+        "[spring.json.value.default.type]": com.example.analytics.event.OrderPlacedEvent
+        "[spring.json.trusted.packages]": com.example.analytics.event
 
 app:
   kafka:
     topics:
-      payment-completed: payment-completed
       order-placed: order-placed
-
-
-
-

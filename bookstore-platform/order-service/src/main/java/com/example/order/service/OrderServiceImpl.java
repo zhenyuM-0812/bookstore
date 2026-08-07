@@ -10,6 +10,8 @@ import com.example.order.dto.OrderResponse;
 import com.example.order.entity.Order;
 import com.example.order.entity.OrderItem;
 import com.example.order.entity.OrderStatus;
+import com.example.order.event.OrderEventPublisher;
+import com.example.order.event.OrderPlacedEvent;
 import com.example.order.exception.InvalidOrderStatusException;
 import com.example.order.exception.OrderAccessDeniedException;
 import com.example.order.exception.ResourceNotFoundException;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final BookClient bookClient;
+    private final OrderEventPublisher orderEventPublisher;
 
 
     private OrderItemResponse toItemResponse(
@@ -107,6 +111,19 @@ public class OrderServiceImpl implements OrderService {
 
         order.setTotalPrice(totalPrice);
         Order saveOrder = orderRepository.save(order);
+
+        OrderPlacedEvent event =
+                new OrderPlacedEvent(
+                        UUID.randomUUID().toString(),
+                        saveOrder.getId(),
+                        saveOrder.getUserId(),
+                        saveOrder.getTotalPrice(),
+                        saveOrder.getStatus().name(),
+                        saveOrder.getCreatedAt()
+                );
+
+        orderEventPublisher.publish(event);
+
 
         return toResponse(saveOrder);
 
