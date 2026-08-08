@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import feign.FeignException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -98,6 +99,50 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    @ExceptionHandler(FeignException.Conflict.class)
+    public ResponseEntity<ErrorResponse> handleFeignConflict(
+            FeignException.Conflict ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = buildError(
+                HttpStatus.CONFLICT,
+                "Insufficient stock for one or more books.",
+                request,
+                null
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.CONFLICT
+        );
+    }
+
+
+    @ExceptionHandler(BookServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse>
+    handleBookServiceUnavailable(
+            BookServiceUnavailableException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = buildError(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                ex.getMessage(),
+                request,
+                null
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+
+
+
+
+
 
 
     @ExceptionHandler(Exception.class)

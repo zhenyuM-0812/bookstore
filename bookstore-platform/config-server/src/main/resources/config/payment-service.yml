@@ -25,7 +25,7 @@ spring:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
       properties:
         "[spring.json.add.type.headers]": false
 
@@ -38,6 +38,20 @@ jwt:
 clients:
   order-service:
     url: http://localhost:8083
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      orderService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        ignoreExceptions:
+          - "feign.FeignException$FeignClientException"
 
 app:
   kafka:

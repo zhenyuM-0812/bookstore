@@ -1,7 +1,6 @@
 package com.example.order.service;
 
 import com.example.order.client.dto.BookStockResponse;
-import com.example.order.client.BookClient;
 import com.example.order.client.dto.ReserveStockRequest;
 import com.example.order.dto.CreateOrderRequest;
 import com.example.order.dto.OrderItemRequest;
@@ -29,8 +28,9 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final BookClient bookClient;
     private final OrderEventPublisher orderEventPublisher;
+    private final BookClientCircuitBreakerService
+            bookClientCircuitBreakerService;
 
 
     private OrderItemResponse toItemResponse(
@@ -86,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
                     );
 
             BookStockResponse bookStock =
-                    bookClient.reserveStock(
+                    bookClientCircuitBreakerService.reserveStock(
                             itemRequest.getBookId(),
                             reserveRequest
                     );

@@ -1,6 +1,5 @@
 package com.example.payment.service;
 
-import com.example.payment.client.OrderClient;
 import com.example.payment.client.dto.OrderSummaryResponse;
 import com.example.payment.dto.PaymentRequest;
 import com.example.payment.dto.PaymentResponse;
@@ -25,7 +24,8 @@ public class PaymentServiceImpl
         implements PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final OrderClient orderClient;
+    private final OrderClientCircuitBreakerService
+            orderClientCircuitBreakerService;
     private final PaymentEventPublisher paymentEventPublisher;
 
     private PaymentResponse toResponse(
@@ -49,7 +49,8 @@ public class PaymentServiceImpl
         Long orderId = request.getOrderId();
 
         OrderSummaryResponse order =
-                orderClient.getOrderById(orderId);
+                orderClientCircuitBreakerService
+                        .getOrderById(orderId);
 
         if (paymentRepository.existsByOrderId(orderId)) {
 
@@ -102,7 +103,8 @@ public class PaymentServiceImpl
     public PaymentResponse getPaymentByOrderId(
             Long orderId) {
 
-        orderClient.getOrderById(orderId);
+        orderClientCircuitBreakerService
+                .getOrderById(orderId);
 
         Payment payment =
                 paymentRepository

@@ -100,6 +100,26 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(OrderServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse>
+    handleOrderServiceUnavailable(
+            OrderServiceUnavailableException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = buildError(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                ex.getMessage(),
+                request,
+                null
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
